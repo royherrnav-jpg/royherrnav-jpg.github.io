@@ -1,0 +1,51 @@
+---
+import Base from '../layouts/Base.astro';
+import { Image } from 'astro:assets';
+import { Content, frontmatter } from '../about.md';
+import graduation from '../assets/about/graduation.jpg';
+import selfie from '../assets/about/selfie.jpg';
+import { SITE } from '../site.config';
+
+const links = SITE.links.filter((link) => link.href);
+---
+
+<Base title="About" description={frontmatter.description}>
+  <header class="page-head">
+    <h1>About</h1>
+  </header>
+
+  <div class="about">
+    <div class="prose about-text">
+      <Content />
+      {
+        links.length > 0 && (
+          <>
+            <h2>Contact</h2>
+            <ul>
+              {links.map((link) => (
+                <li>
+                  <a href={link.href}>{link.label}</a>
+                </li>
+              ))}
+            </ul>
+          </>
+        )
+      }
+    </div>
+
+    <div class="about-photos">
+      <Image
+        src={graduation}
+        alt="Roy at graduation, smiling in a black gown with an orange stole and a medal"
+        widths={[480, 960]}
+        sizes="(max-width: 820px) 50vw, 416px"
+      />
+      <Image
+        src={selfie}
+        alt="Roy smiling in a selfie, wearing an FC Barcelona jersey"
+        widths={[480, 960]}
+        sizes="(max-width: 820px) 50vw, 416px"
+      />
+    </div>
+  </div>
+</Base>
