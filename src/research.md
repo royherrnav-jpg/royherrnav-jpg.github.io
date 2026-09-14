@@ -3,21 +3,23 @@
 role: First-year PhD student in physics
 # institution: Department of Physics, Your University
 areas: [Quantum optics, Quantum information]
-summary: I study light at the quantum level, and how quantum systems can carry and process information.
+summary: I study how light behaves at the quantum level, and how quantum systems can be used to store, process and communicate information.
 ---
 
-I'm a first-year PhD student in physics, working in quantum optics and quantum information.
+I'm in the first year of a PhD in physics, working where quantum optics and quantum information meet.
 
 ## Quantum optics
 
-Quantum optics studies light at the level of its individual quanta, photons, and how light interacts with matter. It's home to some of the cleanest tests of quantum mechanics, because states of light can be prepared, controlled and measured with remarkable precision.
+Light is made of photons, and at that scale it stops behaving like a classical wave. Its noise can be squeezed below the level of any classical beam. A single photon can be put in a superposition of paths, and pairs of photons can be entangled across long distances. Quantum optics studies these states of light: how to prepare them, how they evolve, and how to measure them.
 
 ## Quantum information
 
-Quantum information asks what changes when information is stored and processed in quantum systems. Superposition and entanglement become resources for computation, communication and sensing, and they come with limits that have no classical counterpart.
+Quantum information starts from a different question: what becomes possible when information is encoded in quantum systems? Some of the answers have no classical equivalent. They include communication whose security rests on physics, measurements more precise than classical limits allow, and computations believed to be out of reach for ordinary computers. The same physics also imposes new limits. An unknown quantum state, for example, can't be copied.
 
-## Where the two meet
+## Why light
 
-Light is a natural carrier of quantum information. It travels far, interacts only weakly with its surroundings, and can be measured in many different ways. A large part of the field is about preparing quantum states of light, controlling them, and measuring them well enough to put them to use.
+The two fields fit together naturally. Photons keep their quantum character over long distances, barely interact with their surroundings, and can be detected with great precision. That makes light one of the leading platforms for quantum communication, sensing and computation. The challenge is making the right quantum states reliably, and keeping them quantum long enough to use.
 
-This page will grow as my research takes shape.
+## This year
+
+I'm building a foundation in the field and starting on research. This page will fill in as that work develops.
