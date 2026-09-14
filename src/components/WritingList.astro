@@ -1,0 +1,40 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { WRITING_KINDS, longDate, postUrl } from '../site.config';
+
+interface Props {
+  posts: CollectionEntry<'writing'>[];
+  showKind?: boolean;
+}
+
+const { posts, showKind = false } = Astro.props;
+
+const years = new Map<number, typeof posts>();
+for (const post of posts) {
+  const year = post.data.date.getUTCFullYear();
+  years.set(year, [...(years.get(year) ?? []), post]);
+}
+---
+
+{
+  [...years].map(([year, list]) => (
+    <section class="year">
+      <h2 class="label">{year}</h2>
+      <ul class="entries">
+        {list.map((post) => (
+          <li>
+            <a class="entry-title" href={postUrl(post)}>
+              {post.data.title}
+            </a>
+            {post.data.description && <p>{post.data.description}</p>}
+            <span class="meta">
+              {showKind && `${WRITING_KINDS[post.data.kind].singular.toLowerCase()} · `}
+              <time datetime={post.data.date.toISOString()}>{longDate(post.data.date)}</time>
+              {post.data.tags.length > 0 && ` · ${post.data.tags.join(', ')}`}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </section>
+  ))
+}

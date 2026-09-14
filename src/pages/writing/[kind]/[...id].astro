@@ -1,35 +1,38 @@
 ---
 import 'katex/dist/katex.min.css';
-import Base from '../../layouts/Base.astro';
+import Base from '../../../layouts/Base.astro';
 import { getCollection, render, type CollectionEntry } from 'astro:content';
-import { longDate } from '../../site.config';
+import { WRITING_KINDS, longDate } from '../../../site.config';
 
 export async function getStaticPaths() {
   const posts = await getCollection('writing', ({ data }) => !data.draft);
-  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+  return posts.map((post) => ({ params: { kind: post.data.kind, id: post.id }, props: { post } }));
 }
 
 type Props = { post: CollectionEntry<'writing'> };
 
 const { post } = Astro.props;
 const { Content } = await render(post);
+const kind = WRITING_KINDS[post.data.kind];
+const isPoem = post.data.kind === 'poems';
 ---
 
 <Base title={post.data.title} description={post.data.description}>
   <article>
     <header class="page-head">
       <p class="meta">
+        <a href={`/writing/${post.data.kind}/`}>{kind.singular.toLowerCase()}</a> ·
         <time datetime={post.data.date.toISOString()}>{longDate(post.data.date)}</time>
         {post.data.tags.length > 0 && ` · ${post.data.tags.join(', ')}`}
       </p>
       <h1>{post.data.title}</h1>
-      {post.data.description && <p class="lede">{post.data.description}</p>}
+      {post.data.description && !isPoem && <p class="lede">{post.data.description}</p>}
     </header>
-    <div class="prose">
+    <div class:list={['prose', { poem: isPoem }]}>
       <Content />
     </div>
     <footer class="post-foot">
-      <a href="/writing/">← all writing</a>
+      <a href={`/writing/${post.data.kind}/`}>← all {kind.label.toLowerCase()}</a>
     </footer>
   </article>
 </Base>

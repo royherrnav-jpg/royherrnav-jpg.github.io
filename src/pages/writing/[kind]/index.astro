@@ -1,0 +1,30 @@
+---
+import Base from '../../../layouts/Base.astro';
+import WritingList from '../../../components/WritingList.astro';
+import WritingNav from '../../../components/WritingNav.astro';
+import { getCollection } from 'astro:content';
+import { WRITING_KINDS, type WritingKind } from '../../../site.config';
+
+export function getStaticPaths() {
+  return Object.keys(WRITING_KINDS).map((kind) => ({ params: { kind } }));
+}
+
+const kind = Astro.params.kind as WritingKind;
+const info = WRITING_KINDS[kind];
+
+const all = (await getCollection('writing', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const posts = all.filter((post) => post.data.kind === kind);
+---
+
+<Base title={info.label} description={info.description || info.label}>
+  <header class="page-head">
+    <h1>{info.label}</h1>
+    {info.description && <p class="lede">{info.description}</p>}
+  </header>
+
+  <WritingNav posts={all} current={kind} />
+
+  {posts.length === 0 ? <p class="empty">No {info.label.toLowerCase()} yet.</p> : <WritingList posts={posts} />}
+</Base>

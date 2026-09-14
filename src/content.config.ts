@@ -1,12 +1,14 @@
 import { defineCollection } from 'astro:content';
 import { glob } from 'astro/loaders';
 import { z } from 'astro/zod';
+import { WRITING_KINDS, type WritingKind } from './site.config';
 
-// Blog posts: one Markdown file per post in src/content/writing/.
+// Writing: one Markdown file per piece in src/content/writing/.
 const writing = defineCollection({
   loader: glob({ pattern: '**/*.md', base: './src/content/writing' }),
   schema: z.object({
     title: z.string(),
+    kind: z.enum(Object.keys(WRITING_KINDS) as [WritingKind, ...WritingKind[]]).default('thoughts'),
     date: z.coerce.date(),
     description: z.string().optional(),
     tags: z.array(z.string()).default([]),

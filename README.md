@@ -1,6 +1,6 @@
 # personal-site
 
-A personal site built with [Astro](https://astro.build): research, photographs, writing, and interests.
+A personal site built with [Astro](https://astro.build): research, photographs, writing, and recommendations.
 
 ## Run it locally
 
@@ -18,16 +18,18 @@ Then open http://localhost:4321.
 | Blog posts | `src/content/writing/*.md` (one file per post) |
 | Research page (and homepage Research column) | `src/research.md` |
 | Photo albums | `src/content/albums/<album>.md` plus a `<album>/` folder of images |
-| About, Interests | `src/pages/about.md`, `src/pages/interests.md` |
+| Recommendations (music, playlists, books…) | `src/recommendations.md` |
+| About | `src/pages/about.md` |
 | Colours, fonts, spacing | `src/styles/global.css` (tokens at the top) |
 
-### New blog post
+### New essay, thought or poem
 
 Create `src/content/writing/my-post.md`:
 
 ```md
 ---
 title: My post
+kind: essays  # essays, thoughts or poems
 date: 2026-09-20
 description: One sentence for the list and RSS feed.
 tags: [photography]

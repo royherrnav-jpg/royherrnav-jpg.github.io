@@ -1,0 +1,129 @@
+---
+import Base from '../layouts/Base.astro';
+import { frontmatter } from '../recommendations.md';
+
+type Item = {
+  title: string;
+  by?: string;
+  year?: number | string;
+  link?: string;
+  note?: string;
+  isbn?: number | string;
+  example?: boolean;
+};
+
+const SECTIONS = [
+  { key: 'playlists', label: 'Playlists' },
+  { key: 'music', label: 'Music' },
+  { key: 'books', label: 'Books' },
+  { key: 'films', label: 'Films & TV' },
+  { key: 'podcasts', label: 'Podcasts' },
+  { key: 'other', label: 'Everything else' },
+];
+
+const sections = SECTIONS.map((section) => ({
+  ...section,
+  items: ((frontmatter[section.key] ?? []) as Item[]).filter((item) => item?.title),
+})).filter((section) => section.items.length > 0);
+
+// open.spotify.com/playlist/<id>?si=… → open.spotify.com/embed/playlist/<id>
+const spotifyEmbed = (link?: string) => {
+  const match = link?.match(
+    /open\.spotify\.com\/(?:intl-[a-z-]+\/)?(playlist|album|track|episode|show)\/([A-Za-z0-9]+)/,
+  );
+  return match ? `https://open.spotify.com/embed/${match[1]}/${match[2]}` : undefined;
+};
+
+const byline = (item: Item) => [item.by, item.year].filter(Boolean).join(' · ');
+const cover = (item: Item) =>
+  item.isbn
+    ? `https://covers.openlibrary.org/b/isbn/${String(item.isbn).replace(/[^0-9Xx]/g, '')}-M.jpg?default=false`
+    : undefined;
+const intro = frontmatter.intro ?? 'Music, books and other things I think are worth your time.';
+---
+
+<Base title="Recommendations" description={intro}>
+  <header class="page-head">
+    <h1>Recommendations</h1>
+    <p class="lede">{intro}</p>
+  </header>
+
+  {sections.length === 0 && <p class="empty">Nothing here yet.</p>}
+
+  {
+    sections.length > 1 && (
+      <nav class="rec-jump" aria-label="Recommendation categories">
+        {sections.map((section) => (
+          <a href={`#${section.key}`}>
+            {section.label.toLowerCase()} <span>{section.items.length}</span>
+          </a>
+        ))}
+      </nav>
+    )
+  }
+
+  {
+    sections.map((section) => (
+      <section class="rec-section" id={section.key}>
+        <h2 class="label">{section.label}</h2>
+
+        {section.key === 'playlists' ? (
+          <div class="playlists">
+            {section.items.map((item) => {
+              const embed = spotifyEmbed(item.link);
+              return (
+                <div class="playlist">
+                  {embed && (
+                    <iframe
+                      src={embed}
+                      title={`Spotify: ${item.title}`}
+                      loading="lazy"
+                      allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                    />
+                  )}
+                  <div class="rec-body">
+                    {item.link ? (
+                      <a class="rec-title" href={item.link}>
+                        {item.title}
+                      </a>
+                    ) : (
+                      <span class="rec-title">{item.title}</span>
+                    )}
+                    {item.example && <span class="tag">example</span>}
+                    {item.note && <p class="rec-note">{item.note}</p>}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        ) : (
+          <ul class="recs">
+            {section.items.map((item) => (
+              <li class:list={['rec', { 'has-cover': cover(item) }]}>
+                {cover(item) && (
+                  <img class="rec-cover" src={cover(item)} alt="" loading="lazy" onerror="this.closest('.rec').classList.remove('has-cover'); this.remove()" />
+                )}
+                <div class="rec-body">
+                  {item.link ? (
+                    <a class="rec-title" href={item.link}>
+                      {item.title}
+                    </a>
+                  ) : (
+                    <span class="rec-title">{item.title}</span>
+                  )}
+                  {(byline(item) || item.example) && (
+                    <span class="meta">
+                      {byline(item)}
+                      {item.example && <span class="tag">example</span>}
+                    </span>
+                  )}
+                  {item.note && <p class="rec-note">{item.note}</p>}
+                </div>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+    ))
+  }
+</Base>

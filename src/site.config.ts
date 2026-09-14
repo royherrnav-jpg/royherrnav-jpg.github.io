@@ -17,9 +17,21 @@ export const NAV = [
   { label: 'research', href: '/research/' },
   { label: 'photographs', href: '/photographs/' },
   { label: 'writing', href: '/writing/' },
-  { label: 'interests', href: '/interests/' },
+  { label: 'recommendations', href: '/recommendations/' },
   { label: 'about', href: '/about/' },
 ];
+
+// Every post has a `kind`. Each kind gets its own page at /writing/<kind>/.
+export const WRITING_KINDS = {
+  essays: { label: 'Essays', singular: 'Essay', description: 'Longer pieces.' },
+  thoughts: { label: 'Thoughts', singular: 'Thought', description: 'Shorter notes and passing thoughts.' },
+  poems: { label: 'Poems', singular: 'Poem', description: '' },
+} as const;
+
+export type WritingKind = keyof typeof WRITING_KINDS;
+
+export const postUrl = (post: { id: string; data: { kind: WritingKind } }) =>
+  `/writing/${post.data.kind}/${post.id}/`;
 
 export type Publication = {
   title: string;

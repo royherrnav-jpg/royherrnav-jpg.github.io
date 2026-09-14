@@ -1,0 +1,24 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { WRITING_KINDS, type WritingKind } from '../site.config';
+
+interface Props {
+  posts: CollectionEntry<'writing'>[];
+  current?: WritingKind;
+}
+
+const { posts, current } = Astro.props;
+const kinds = Object.keys(WRITING_KINDS) as WritingKind[];
+const count = (kind: WritingKind) => posts.filter((post) => post.data.kind === kind).length;
+---
+
+<nav class="kind-nav" aria-label="Kinds of writing">
+  <a href="/writing/" aria-current={current ? undefined : 'page'}>all <span>{posts.length}</span></a>
+  {
+    kinds.map((kind) => (
+      <a href={`/writing/${kind}/`} aria-current={current === kind ? 'page' : undefined}>
+        {kind} <span>{count(kind)}</span>
+      </a>
+    ))
+  }
+</nav>

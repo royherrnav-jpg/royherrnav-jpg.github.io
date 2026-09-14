@@ -1,6 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
-import { monthStamp } from '../site.config';
+import { monthStamp, postUrl } from '../site.config';
 
 interface Props {
   posts: CollectionEntry<'writing'>[];
@@ -19,7 +19,7 @@ const { posts } = Astro.props;
           <time class="meta" datetime={post.data.date.toISOString()}>
             {monthStamp(post.data.date)}
           </time>
-          <a href={`/writing/${post.id}/`}>{post.data.title}</a>
+          <a href={postUrl(post)}>{post.data.title}</a>
         </li>
       ))}
     </ul>
