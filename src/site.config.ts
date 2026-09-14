@@ -41,6 +41,13 @@ export type Publication = {
   href?: string;
 };
 
+// Where your published papers are listed (Google Scholar, ORCID, arXiv, INSPIRE…).
+// Shown on the Research page and the homepage. Leave href empty to hide it.
+export const PAPERS = {
+  label: 'Google Scholar',
+  href: 'https://scholar.google.com/citations?user=1b8V3REAAAAJ&hl=en',
+};
+
 // Listed on the Research page. The section stays hidden while this is empty.
 export const PUBLICATIONS: Publication[] = [
   // { title: 'Paper title', authors: 'R. Herrera, A. Advisor', venue: 'arXiv:2609.01234', year: 2026, href: 'https://arxiv.org/abs/2609.01234' },

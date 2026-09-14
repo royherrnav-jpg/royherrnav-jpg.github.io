@@ -5,7 +5,7 @@ import PostList from '../components/PostList.astro';
 import { Image } from 'astro:assets';
 import { getCollection } from 'astro:content';
 import { frontmatter as research } from '../research.md';
-import { SITE } from '../site.config';
+import { PAPERS, SITE } from '../site.config';
 
 const byNewest = (a: { data: { date: Date } }, b: { data: { date: Date } }) =>
   b.data.date.valueOf() - a.data.date.valueOf();
@@ -43,6 +43,7 @@ const links = SITE.links.filter((link) => link.href);
       <a href="/research/">{research.role}</a>
       <p class="summary">{research.summary}</p>
       <span class="status">{research.areas.join(' · ').toLowerCase()}</span>
+      {PAPERS.href && <a class="meta" href={PAPERS.href}>published papers →</a>}
     </div>
 
     <div>

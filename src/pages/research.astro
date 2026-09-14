@@ -1,13 +1,16 @@
 ---
 import Base from '../layouts/Base.astro';
 import { Content, frontmatter } from '../research.md';
-import { PUBLICATIONS } from '../site.config';
+import { PAPERS, PUBLICATIONS } from '../site.config';
+
+type Fact = { label: string; value: string; href?: string };
 
 const facts = [
   { label: 'Position', value: frontmatter.role },
   frontmatter.institution && { label: 'Institution', value: frontmatter.institution },
   { label: 'Areas', value: frontmatter.areas.join(' · ') },
-].filter(Boolean) as { label: string; value: string }[];
+  PAPERS.href && { label: 'Publications', value: `${PAPERS.label} →`, href: PAPERS.href },
+].filter(Boolean) as Fact[];
 ---
 
 <Base title="Research" description={frontmatter.summary}>
@@ -21,7 +24,7 @@ const facts = [
       facts.map((fact) => (
         <div>
           <dt>{fact.label}</dt>
-          <dd>{fact.value}</dd>
+          <dd>{fact.href ? <a href={fact.href}>{fact.value}</a> : fact.value}</dd>
         </div>
       ))
     }
