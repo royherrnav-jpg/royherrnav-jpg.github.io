@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { longDate } from '../../site.config';
+
+const posts = (await getCollection('writing', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const years = new Map<number, typeof posts>();
+for (const post of posts) {
+  const year = post.data.date.getUTCFullYear();
+  years.set(year, [...(years.get(year) ?? []), post]);
+}
+---
+
+<Base title="Writing" description="Notes on research, photography, and everything else.">
+  <header class="page-head">
+    <h1>Writing</h1>
+    <p class="lede">Notes on research, photography, and everything else. Also available as an <a href="/rss.xml">RSS feed</a>.</p>
+  </header>
+
+  {posts.length === 0 && <p class="empty">Nothing here yet.</p>}
+
+  {
+    [...years].map(([year, list]) => (
+      <section class="year">
+        <h2 class="label">{year}</h2>
+        <ul class="entries">
+          {list.map((post) => (
+            <li>
+              <a class="entry-title" href={`/writing/${post.id}/`}>
+                {post.data.title}
+              </a>
+              {post.data.description && <p>{post.data.description}</p>}
+              <time class="meta" datetime={post.data.date.toISOString()}>
+                {longDate(post.data.date)}
+                {post.data.tags.length > 0 && ` · ${post.data.tags.join(', ')}`}
+              </time>
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+</Base>

@@ -1,0 +1,39 @@
+---
+import Base from '../../layouts/Base.astro';
+import { Image } from 'astro:assets';
+import { getCollection } from 'astro:content';
+import { dateRange } from '../../site.config';
+
+const albums = (await getCollection('albums')).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+
+const camerasOf = (photos: { camera?: string }[]) =>
+  [...new Set(photos.flatMap((p) => (p.camera ? [p.camera] : [])))].join(', ');
+---
+
+<Base title="Photographs" description="Photo albums, newest first.">
+  <header class="page-head">
+    <h1>Photographs</h1>
+    <p class="lede">Albums, newest first.</p>
+  </header>
+
+  {albums.length === 0 && <p class="empty">No albums yet.</p>}
+
+  <ul class="albums">
+    {
+      albums.map((album) => (
+        <li>
+          <a class="album-card" href={`/photographs/${album.id}/`}>
+            <Image src={album.data.cover} alt="" widths={[400, 800]} sizes="(max-width: 700px) 100vw, 360px" />
+            <span class="album-title">{album.data.title}</span>
+            <span class="meta">
+              {dateRange(album.data.date, album.data.dateEnd)} · {album.data.photos.length} frames
+            </span>
+            {camerasOf(album.data.photos) && <span class="meta">{camerasOf(album.data.photos)}</span>}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</Base>

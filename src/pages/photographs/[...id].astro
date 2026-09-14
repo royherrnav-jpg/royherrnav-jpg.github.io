@@ -1,0 +1,226 @@
+---
+import Base from '../../layouts/Base.astro';
+import { Image, getImage } from 'astro:assets';
+import { getCollection, type CollectionEntry } from 'astro:content';
+import { clockTime, dateRange, exposureParts, longDate, shortDate, takenDate } from '../../site.config';
+
+export async function getStaticPaths() {
+  const albums = await getCollection('albums');
+  return albums.map((album) => ({ params: { id: album.id }, props: { album } }));
+}
+
+type Props = { album: CollectionEntry<'albums'> };
+
+const { album } = Astro.props;
+const photos = await Promise.all(
+  album.data.photos.map(async (photo, i) => ({
+    ...photo,
+    number: i + 1,
+    when: photo.taken ? takenDate(photo.taken) : undefined,
+    exposure: exposureParts(photo),
+    full: await getImage({ src: photo.src, width: Math.min(2400, photo.src.width), format: 'webp' }),
+  })),
+);
+type Photo = (typeof photos)[number];
+
+// A new shoot starts wherever two consecutive frames are more than two days apart.
+const SHOOT_GAP_MS = 2 * 24 * 60 * 60 * 1000;
+const shoots: Photo[][] = [];
+for (const photo of photos) {
+  const shoot = shoots.at(-1);
+  const prev = shoot?.at(-1);
+  const gap = photo.when && prev?.when ? photo.when.valueOf() - prev.when.valueOf() : 0;
+  if (shoot && gap <= SHOOT_GAP_MS) shoot.push(photo);
+  else shoots.push([photo]);
+}
+
+const spanOf = (list: Photo[]) => {
+  const times = list.flatMap((p) => (p.when ? [p.when.valueOf()] : []));
+  return times.length ? dateRange(new Date(Math.min(...times)), new Date(Math.max(...times))) : undefined;
+};
+
+const tally = (values: (string | undefined)[]) => {
+  const counts = new Map<string, number>();
+  for (const v of values) if (v) counts.set(v, (counts.get(v) ?? 0) + 1);
+  return [...counts].sort((a, b) => b[1] - a[1]);
+};
+
+const albumSpan = spanOf(photos) ?? dateRange(album.data.date, album.data.dateEnd);
+const cameras = tally(photos.map((p) => p.camera));
+const focals = tally(photos.map((p) => (p.focalLength ? `${p.focalLength}mm` : undefined)));
+const isos = photos.flatMap((p) => (p.iso ? [p.iso] : []));
+const isoMin = Math.min(...isos);
+const isoMax = Math.max(...isos);
+
+const facts = [
+  { label: 'Frames', value: String(photos.length) },
+  { label: 'Dates', value: albumSpan },
+  cameras.length > 0 && { label: cameras.length > 1 ? 'Cameras' : 'Camera', value: cameras.map(([c]) => c).join(', ') },
+  focals.length > 0 && { label: 'Focal lengths', value: focals.map(([f, n]) => `${f} ×${n}`).join(' · ') },
+  isos.length > 0 && { label: 'ISO', value: isoMin === isoMax ? `${isoMin}` : `${isoMin}–${isoMax}` },
+].filter(Boolean) as { label: string; value: string }[];
+
+const hasLog = photos.some((p) => p.when || p.exposure.length > 0);
+const dash = '—';
+---
+
+<Base title={album.data.title} description={album.data.description}>
+  <header class="page-head">
+    <p class="meta"><a href="/photographs/">photographs</a> · {albumSpan}</p>
+    <h1>{album.data.title}</h1>
+    {album.data.description && <p class="lede">{album.data.description}</p>}
+  </header>
+
+  <dl class="facts">
+    {
+      facts.map((fact) => (
+        <div>
+          <dt>{fact.label}</dt>
+          <dd>{fact.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  {
+    shoots.map((shoot) => (
+      <section class="shoot">
+        {shoots.length > 1 && (
+          <header class="shoot-head">
+            <h2>{spanOf(shoot) ?? 'Undated'}</h2>
+            <span class="meta">
+              {shoot.length} {shoot.length === 1 ? 'frame' : 'frames'}
+            </span>
+          </header>
+        )}
+        <ul class="gallery">
+          {shoot.map((photo) => (
+            <li>
+              <a
+                href={photo.full.src}
+                data-lightbox
+                data-caption={[
+                  photo.caption,
+                  photo.when && `${longDate(photo.when)}, ${clockTime(photo.when)}`,
+                  ...photo.exposure,
+                ]
+                  .filter(Boolean)
+                  .join('  ·  ')}
+                aria-label={`Open frame ${photo.number} of ${photos.length}`}
+              >
+                <Image
+                  src={photo.src}
+                  alt={photo.alt ?? photo.caption ?? ''}
+                  widths={[480, 960]}
+                  sizes="(max-width: 700px) 100vw, 360px"
+                />
+              </a>
+              {(photo.when || photo.exposure.length > 0) && (
+                <p class="exposure">
+                  {photo.when && (
+                    <time datetime={photo.taken}>
+                      {shortDate(photo.when)} {clockTime(photo.when)}
+                    </time>
+                  )}
+                  {photo.exposure.map((part) => (
+                    <span>{part}</span>
+                  ))}
+                </p>
+              )}
+              {photo.caption && <p class="caption">{photo.caption}</p>}
+            </li>
+          ))}
+        </ul>
+      </section>
+    ))
+  }
+
+  {
+    hasLog && (
+      <details class="log">
+        <summary>Exposure log</summary>
+        <div class="log-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">Frame</th>
+                <th scope="col">Date</th>
+                <th scope="col">Time</th>
+                <th scope="col">Camera</th>
+                <th scope="col">Lens</th>
+                <th scope="col">Focal</th>
+                <th scope="col">Aperture</th>
+                <th scope="col">Shutter</th>
+                <th scope="col">ISO</th>
+              </tr>
+            </thead>
+            <tbody>
+              {photos.map((p) => (
+                <tr>
+                  <td>{String(p.number).padStart(2, '0')}</td>
+                  <td>{p.when ? longDate(p.when) : dash}</td>
+                  <td>{p.when ? clockTime(p.when) : dash}</td>
+                  <td>{p.camera ?? dash}</td>
+                  <td>{p.lens ?? dash}</td>
+                  <td>{p.focalLength ? `${p.focalLength}mm` : dash}</td>
+                  <td>{p.aperture ? `f/${p.aperture}` : dash}</td>
+                  <td>{p.shutter ? `${p.shutter}s` : dash}</td>
+                  <td>{p.iso ?? dash}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </details>
+    )
+  }
+
+  <dialog class="lightbox" id="lightbox" aria-label="Photo viewer">
+    <button class="lb-prev" type="button" aria-label="Previous photo">←</button>
+    <figure>
+      <img alt="" />
+      <figcaption></figcaption>
+    </figure>
+    <button class="lb-next" type="button" aria-label="Next photo">→</button>
+    <button class="lb-close" type="button">close</button>
+  </dialog>
+</Base>
+
+<script>
+  const dialog = document.querySelector<HTMLDialogElement>('#lightbox');
+  const links = [...document.querySelectorAll<HTMLAnchorElement>('[data-lightbox]')];
+
+  if (dialog && links.length) {
+    const img = dialog.querySelector('img')!;
+    const caption = dialog.querySelector('figcaption')!;
+    let current = 0;
+
+    const show = (i: number) => {
+      current = (i + links.length) % links.length;
+      const link = links[current];
+      img.src = link.href;
+      img.alt = link.querySelector('img')?.alt ?? '';
+      const counter = `${current + 1} / ${links.length}`;
+      caption.textContent = link.dataset.caption ? `${counter}  ·  ${link.dataset.caption}` : counter;
+    };
+
+    links.forEach((link, i) =>
+      link.addEventListener('click', (event) => {
+        event.preventDefault();
+        show(i);
+        dialog.showModal();
+      }),
+    );
+
+    dialog.querySelector('.lb-prev')!.addEventListener('click', () => show(current - 1));
+    dialog.querySelector('.lb-next')!.addEventListener('click', () => show(current + 1));
+    dialog.querySelector('.lb-close')!.addEventListener('click', () => dialog.close());
+    dialog.addEventListener('keydown', (event) => {
+      if (event.key === 'ArrowLeft') show(current - 1);
+      if (event.key === 'ArrowRight') show(current + 1);
+    });
+    dialog.addEventListener('click', (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+  }
+</script>

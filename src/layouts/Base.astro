@@ -1,0 +1,59 @@
+---
+import '../styles/global.css';
+import { SITE, NAV } from '../site.config';
+
+interface Props {
+  title?: string;
+  description?: string;
+  home?: boolean;
+}
+
+const { title, description = SITE.description, home = false } = Astro.props;
+const pageTitle = title ? `${title} · ${SITE.name}` : SITE.name;
+const path = Astro.url.pathname;
+const canonical = Astro.site ? new URL(path, Astro.site) : undefined;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="light dark" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {canonical && <link rel="canonical" href={canonical} />}
+    <link rel="icon" type="image/svg+xml" href="/mark.svg" />
+    <link rel="alternate" type="application/rss+xml" title={`${SITE.name}: writing`} href="/rss.xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,500;0,7..72,600;1,7..72,400&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <meta name="generator" content={Astro.generator} />
+  </head>
+  <body>
+    <div class="shell">
+      <header class="site-header">
+        {home ? <span /> : <a class="brand" href="/">{SITE.name}</a>}
+        <nav aria-label="Main">
+          {
+            NAV.map((item) => (
+              <a href={item.href} aria-current={path.startsWith(item.href) ? 'page' : undefined}>
+                {item.label}
+              </a>
+            ))
+          }
+        </nav>
+      </header>
+      <main>
+        <slot />
+      </main>
+      <footer class="site-footer">
+        <span>© {new Date().getFullYear()} {SITE.name}</span>
+        <a href="/rss.xml">rss</a>
+      </footer>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,35 @@
+---
+import 'katex/dist/katex.min.css';
+import Base from '../../layouts/Base.astro';
+import { getCollection, render, type CollectionEntry } from 'astro:content';
+import { longDate } from '../../site.config';
+
+export async function getStaticPaths() {
+  const posts = await getCollection('writing', ({ data }) => !data.draft);
+  return posts.map((post) => ({ params: { id: post.id }, props: { post } }));
+}
+
+type Props = { post: CollectionEntry<'writing'> };
+
+const { post } = Astro.props;
+const { Content } = await render(post);
+---
+
+<Base title={post.data.title} description={post.data.description}>
+  <article>
+    <header class="page-head">
+      <p class="meta">
+        <time datetime={post.data.date.toISOString()}>{longDate(post.data.date)}</time>
+        {post.data.tags.length > 0 && ` · ${post.data.tags.join(', ')}`}
+      </p>
+      <h1>{post.data.title}</h1>
+      {post.data.description && <p class="lede">{post.data.description}</p>}
+    </header>
+    <div class="prose">
+      <Content />
+    </div>
+    <footer class="post-foot">
+      <a href="/writing/">← all writing</a>
+    </footer>
+  </article>
+</Base>

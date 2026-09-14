@@ -1,0 +1,76 @@
+---
+// Wigner function of an even cat state, drawn in the theme's pos/neg colours.
+interface Props {
+  alpha?: number;
+}
+
+const { alpha = 2 } = Astro.props;
+---
+
+<figure class="wigner">
+  <span class="axis-p" aria-hidden="true">p</span>
+  <canvas
+    data-wigner
+    data-alpha={alpha}
+    role="img"
+    aria-label={`Wigner function of an even cat state with alpha = ${alpha}`}
+  ></canvas>
+  <span class="axis-x" aria-hidden="true">x</span>
+  <figcaption><slot /></figcaption>
+</figure>
+
+<script>
+  const hex = (value: string) => {
+    const h = value.trim().replace('#', '');
+    return [0, 2, 4].map((i) => parseInt(h.slice(i, i + 2), 16));
+  };
+
+  function draw(canvas: HTMLCanvasElement) {
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width) return;
+    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const w = Math.round(rect.width * dpr);
+    const h = Math.round(rect.height * dpr);
+    canvas.width = w;
+    canvas.height = h;
+
+    const styles = getComputedStyle(document.documentElement);
+    const pos = hex(styles.getPropertyValue('--pos'));
+    const neg = hex(styles.getPropertyValue('--neg'));
+    const zero = hex(styles.getPropertyValue('--ground'));
+
+    // W(x,p) ∝ e^{-(x-a)²-p²} + e^{-(x+a)²-p²} + 2e^{-x²-p²} cos(2ap),  a = √2 α
+    const a = Math.SQRT2 * Number(canvas.dataset.alpha ?? 2);
+    const xRange = a + 3.4;
+    const pRange = (xRange * h) / w;
+
+    const ctx = canvas.getContext('2d')!;
+    const img = ctx.createImageData(w, h);
+    const d = img.data;
+    for (let j = 0; j < h; j++) {
+      const p = (0.5 - j / h) * 2 * pRange;
+      for (let i = 0; i < w; i++) {
+        const x = (i / w - 0.5) * 2 * xRange;
+        const v =
+          Math.exp(-((x - a) ** 2) - p * p) +
+          Math.exp(-((x + a) ** 2) - p * p) +
+          2 * Math.exp(-x * x - p * p) * Math.cos(2 * a * p);
+        const t = Math.min(1, (Math.abs(v) / 2) * 1.25) ** 0.7;
+        const c = v >= 0 ? pos : neg;
+        const k = (j * w + i) * 4;
+        d[k] = zero[0] + (c[0] - zero[0]) * t;
+        d[k + 1] = zero[1] + (c[1] - zero[1]) * t;
+        d[k + 2] = zero[2] + (c[2] - zero[2]) * t;
+        d[k + 3] = 255;
+      }
+    }
+    ctx.putImageData(img, 0, 0);
+  }
+
+  const canvases = [...document.querySelectorAll<HTMLCanvasElement>('canvas[data-wigner]')];
+  const redraw = () => canvases.forEach(draw);
+
+  const observer = new ResizeObserver((entries) => entries.forEach((e) => draw(e.target as HTMLCanvasElement)));
+  canvases.forEach((c) => observer.observe(c));
+  matchMedia('(prefers-color-scheme: dark)').addEventListener('change', redraw);
+</script>

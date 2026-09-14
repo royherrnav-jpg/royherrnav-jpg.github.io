@@ -1,0 +1,27 @@
+---
+import type { CollectionEntry } from 'astro:content';
+import { monthStamp } from '../site.config';
+
+interface Props {
+  posts: CollectionEntry<'writing'>[];
+}
+
+const { posts } = Astro.props;
+---
+
+{
+  posts.length === 0 ? (
+    <p class="empty">Nothing here yet.</p>
+  ) : (
+    <ul class="post-list">
+      {posts.map((post) => (
+        <li>
+          <time class="meta" datetime={post.data.date.toISOString()}>
+            {monthStamp(post.data.date)}
+          </time>
+          <a href={`/writing/${post.id}/`}>{post.data.title}</a>
+        </li>
+      ))}
+    </ul>
+  )
+}

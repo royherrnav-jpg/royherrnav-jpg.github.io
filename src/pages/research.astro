@@ -1,0 +1,52 @@
+---
+import Base from '../layouts/Base.astro';
+import { Content, frontmatter } from '../research.md';
+import { PUBLICATIONS } from '../site.config';
+
+const facts = [
+  { label: 'Position', value: frontmatter.role },
+  frontmatter.institution && { label: 'Institution', value: frontmatter.institution },
+  { label: 'Areas', value: frontmatter.areas.join(' · ') },
+].filter(Boolean) as { label: string; value: string }[];
+---
+
+<Base title="Research" description={frontmatter.summary}>
+  <header class="page-head">
+    <h1>Research</h1>
+    <p class="lede">{frontmatter.summary}</p>
+  </header>
+
+  <dl class="facts">
+    {
+      facts.map((fact) => (
+        <div>
+          <dt>{fact.label}</dt>
+          <dd>{fact.value}</dd>
+        </div>
+      ))
+    }
+  </dl>
+
+  <div class="prose">
+    <Content />
+  </div>
+
+  {
+    PUBLICATIONS.length > 0 && (
+      <section class="pubs-section">
+        <h2 class="label">Publications</h2>
+        <ol class="pubs">
+          {PUBLICATIONS.map((pub) => (
+            <li>
+              {pub.href ? <a href={pub.href}>{pub.title}</a> : <span>{pub.title}</span>}
+              <span class="authors">{pub.authors}</span>
+              <span class="meta">
+                {pub.venue} · {pub.year}
+              </span>
+            </li>
+          ))}
+        </ol>
+      </section>
+    )
+  }
+</Base>
