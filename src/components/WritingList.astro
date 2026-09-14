@@ -23,7 +23,7 @@ for (const post of posts) {
       <ul class="entries">
         {list.map((post) => (
           <li>
-            <a class="entry-title" href={postUrl(post)}>
+            <a class="entry-title" href={postUrl(post)} lang={post.data.lang}>
               {post.data.title}
             </a>
             {post.data.description && <p>{post.data.description}</p>}

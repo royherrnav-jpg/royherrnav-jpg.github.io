@@ -10,6 +10,7 @@ const writing = defineCollection({
     title: z.string(),
     kind: z.enum(Object.keys(WRITING_KINDS) as [WritingKind, ...WritingKind[]]).default('thoughts'),
     date: z.coerce.date(),
+    lang: z.string().optional(), // e.g. "es" for pieces not in English
     description: z.string().optional(),
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),

@@ -19,7 +19,9 @@ const { posts } = Astro.props;
           <time class="meta" datetime={post.data.date.toISOString()}>
             {monthStamp(post.data.date)}
           </time>
-          <a href={postUrl(post)}>{post.data.title}</a>
+          <a href={postUrl(post)} lang={post.data.lang}>
+            {post.data.title}
+          </a>
         </li>
       ))}
     </ul>

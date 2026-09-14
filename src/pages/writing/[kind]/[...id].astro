@@ -18,7 +18,7 @@ const isPoem = post.data.kind === 'poems';
 ---
 
 <Base title={post.data.title} description={post.data.description}>
-  <article>
+  <article lang={post.data.lang}>
     <header class="page-head">
       <p class="meta">
         <a href={`/writing/${post.data.kind}/`}>{kind.singular.toLowerCase()}</a> ·
