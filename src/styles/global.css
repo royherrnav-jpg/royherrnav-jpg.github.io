@@ -545,14 +545,16 @@ main {
   border-top: 1px solid var(--rule);
 }
 
-/* Poems: keep the author's line breaks; blank lines become stanza gaps. */
+/* Poems: keep the author's line breaks, spacing and tabs; blank lines become
+   stanza gaps. Markdown strips leading spaces, so indent lines with em spaces. */
 .poem {
   font-size: 18.5px;
   line-height: 1.75;
 }
 
 .poem p {
-  white-space: pre-line;
+  white-space: pre-wrap;
+  tab-size: 4;
 }
 
 .poem > * + * {
